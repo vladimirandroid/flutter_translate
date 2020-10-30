@@ -42,7 +42,7 @@ class Localization {
   }
 
   List<String> _getPluralKeyValuesOrderedByPriority(num value) {
-    switch (value) {
+    switch (value % 10) {
       case 0:
         return [Constants.pluralZero];
       case 1:
