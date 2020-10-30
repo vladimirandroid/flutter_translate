@@ -9,5 +9,7 @@ class Constants
     static const String pluralTwo = '2';
     static const String pluralElse = 'else';
 
+    static const String pluralFew = 'few';
+
     static const String pluralValueArg = '{{value}}';
 }
