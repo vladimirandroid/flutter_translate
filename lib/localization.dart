@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 import 'constants.dart';
 
 class Localization {
@@ -25,36 +27,26 @@ class Localization {
   }
 
   String plural(String key, num value, {Map<String, dynamic> args}) {
-    var pluralKeyValues = _getPluralKeyValuesOrderedByPriority(value);
-    var translation =
-        _getPluralTranslation(key, pluralKeyValues, _translations);
-
-    if (translation != null) {
-      translation =
-          translation.replaceAll(Constants.pluralValueArg, value.toString());
-
-      if (args != null) {
-        translation = _assignArguments(translation, args);
-      }
-    }
-
-    return translation ?? '$key.${pluralKeyValues[0]}';
+    final forms = _getAllPluralForms(key, _translations);
+    return Intl.plural(
+      value,
+      zero: putArgs(forms[Constants.pluralZero], value, args: args),
+      one: putArgs(forms[Constants.pluralOne], value, args: args),
+      two: putArgs(forms[Constants.pluralTwo], value, args: args),
+      few: putArgs(forms[Constants.pluralFew], value, args: args),
+      many: putArgs(forms[Constants.pluralMany], value, args: args),
+      other: putArgs(forms[Constants.pluralOther], value, args: args),
+    );
   }
 
-  List<String> _getPluralKeyValuesOrderedByPriority(num value) {
-    switch (value % 10) {
-      case 0:
-        return [Constants.pluralZero];
-      case 1:
-        return [Constants.pluralOne];
-      case 2:
-        return [Constants.pluralTwo, Constants.pluralFew];
-      case 3:
-      case 4:
-        return [Constants.pluralFew];
-      default:
-        return [Constants.pluralElse];
+  String putArgs(String template, num value, {Map<String, dynamic> args}) {
+    if (template == null) return null;
+    template = template.replaceAll(Constants.pluralValueArg, value.toString());
+    if (args == null) return template;
+    for (String k in args.keys) {
+      template = template.replaceAll("{$k}", args[k].toString());
     }
+    return template;
   }
 
   String _assignArguments(String value, Map<String, dynamic> args) {
@@ -80,23 +72,23 @@ class Localization {
     return map[key];
   }
 
-  String _getPluralTranslation(
-      String key, List<String> valueKeys, Map<String, dynamic> map) {
+  Map<String, String> _getAllPluralForms(String key, Map<String, dynamic> map) {
     List<String> keys = key.split('.');
 
     if (keys.length > 1) {
       var firstKey = keys.first;
 
       if (map.containsKey(firstKey) && map[firstKey] is! String) {
-        return _getPluralTranslation(
-            key.substring(key.indexOf('.') + 1), valueKeys, map[firstKey]);
+        return _getAllPluralForms(
+            key.substring(key.indexOf('.') + 1), map[firstKey]);
       }
     }
 
-    for (String valueKey in valueKeys) {
-      if (map[key][valueKey] != null) return map[key][valueKey];
+    final result = <String, String>{};
+    for (String k in map[key].keys) {
+      result[k] = map[key][k].toString();
     }
 
-    return map[key][Constants.pluralElse];
+    return result;
   }
 }

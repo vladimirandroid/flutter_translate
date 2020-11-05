@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_device_locale/flutter_device_locale.dart';
+import 'package:intl/intl.dart';
 import 'configuration_validator.dart';
 import 'locale_service.dart';
 import 'constants.dart';
@@ -36,6 +37,8 @@ class LocalizationDelegate extends LocalizationsDelegate<Localization>
         Localization.load(localizedContent);
 
         _currentLocale = locale;
+
+        Intl.defaultLocale = _currentLocale.languageCode;
 
         if(onLocaleChanged != null)
         {
